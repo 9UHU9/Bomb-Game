@@ -1,0 +1,154 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <time.h>
+
+#define	SIZE	5				// フィールドのサイズ ( SIZE × SIZE )
+#define	BOMBS	5				// 爆弾の数
+
+#define	NOW	101					// 答え表示用のフラグ
+#define	ANS	102					// 現在の状態表示用のフラグ
+
+char FIELD[SIZE][SIZE];			// 答えを保存する配列(爆弾の位置には「x」が保存される
+char NOW_CONDITION[SIZE][SIZE];	// 現在の状態を保存する配列
+bool recursive = true;
+
+// 整数を文字に変換する関数 
+//	引数(int num)：文字に変換したい数値
+//	戻り値(char)：指定した数値を文字型に変換した値
+char ItoA( int num ) {
+	static const char numbers[10] = "0123456789";
+	return numbers[num];
+}
+
+// 現状および答えを画面に表示する関数
+//	引数(int mode)：NOWかANSが入る		NOW(現状を表示)，ANS(答えを表示)
+//	戻り値：なし
+void Show_field(int mode)
+{
+	int i, j;
+	int num = 1;
+
+	printf("   ");
+	for( i=1; i<=SIZE; i++ )
+		printf("  %d ", i);
+
+	printf("\n    ");
+
+	for( i=0; i<SIZE*4; i++ )
+		printf("-");
+	printf("\n");
+	for( j=0; j<SIZE; j++ ) {
+		if( j<10 )			
+			printf("%d  ", j+1);
+		else
+			printf("%d ", j+1);
+		for( i=0; i<SIZE; i++ ) {
+			switch(mode) {
+				case NOW:
+					printf("| %c ", NOW_CONDITION[j][i]);
+					break;
+				case ANS:
+					printf("| %c ", FIELD[j][i]);
+					break;
+			}
+		}
+		printf("|\n    ");
+		for( i=0; i<SIZE*4; i++ )
+			printf("-");
+		printf("\n");
+	}
+}
+
+// フィールドの初期化用関数(爆弾をランダムにセットする関数)
+//	引数：なし
+//	戻り値：なし
+void Field_init(void)
+{
+	int i, j;
+	int x, y;
+	int count = 0;
+
+	for( j=0; j<SIZE; j++ ) {
+		for( i=0; i<SIZE; i++ ) {
+			FIELD[j][i] = ' ';
+			NOW_CONDITION[j][i] = ' ';
+		}
+	}
+
+	srand(time(NULL));
+	while( count < BOMBS ) {
+		x = rand() % SIZE;
+		y = rand() % SIZE;
+		if( FIELD[y][x] != 'x' ) {
+			FIELD[y][x] = 'x';
+			count ++;
+		}
+	}
+}
+
+// 指定された位置の周囲に存在する爆弾の数を返す関数
+// 引数(int x, inty)：指定された位置のx, y座標
+// 戻り値(int)：指定された位置の周囲に存在する爆弾の数 ( ただし，指定された位置に爆弾が存在する場合は-1を返す )
+int Bomb_counter(int x, int y){
+    int cnt = 0;
+    if(FIELD[x][y] == 'x' && recursive == true){
+        return -1;
+    }
+
+    for(int i = x-1; i <= x+1; i++){
+        for(int j = y-1; j <= y+1; j++){
+            if(FIELD[i][j] == 'x')cnt++;
+        }
+    }
+    NOW_CONDITION[y][x] = ItoA(cnt);
+
+    if(recursive){
+        for(int a = x; a <= x+2; a++){
+            for(int b = y; b <= y+2; b++){
+                if(a > SIZE || a <= 0 || b > SIZE || b <= 0){
+                    continue;
+                }
+                recursive = false;
+                Bomb_counter(a-1,b-1);
+            }
+        }
+        recursive = true;
+    }
+}
+
+int main(void)
+{
+	int x, y;
+	int check;
+	int counter = 0;	
+
+	Field_init();
+	Show_field(NOW);
+	
+	while(1) {
+		printf("調べたい場所のx座標を入力してください(1～%dまで).\nx: ", SIZE);
+		scanf("%d", &x);
+		printf("調べたい場所のy座標を入力してください(1～%dまで).\ny: ", SIZE);
+		scanf("%d", &y);
+		if( x > SIZE || x <= 0 || y > SIZE || y <= 0 ) {
+			printf("xまたはyが範囲外の値です．正しい値を入力してください．\n");
+			continue;
+		}
+		check = Bomb_counter(x-1, y-1);
+		if( check == -1 ) {
+			printf("Bomb!!\n");
+			Show_field(ANS);
+			break;
+		}
+		Show_field(NOW);
+		counter += check;
+		if( counter == SIZE * SIZE - BOMBS ){
+			printf("CONGRATULATION!!!\n");
+			break;
+		}
+	}
+		
+
+	return 0;
+}
