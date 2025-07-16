@@ -4,6 +4,47 @@
 
 ------------------------------------------------------------------------------------
 
+#main
+```
+int main(void)
+{
+	int x, y;
+	int check;
+	int counter = 0;	
+
+	Field_init();
+	Show_field(NOW);
+	
+	while(1) {
+		printf("調べたい場所のx座標を入力してください(1～%dまで).\nx: ", SIZE);
+		scanf("%d", &x);
+		printf("調べたい場所のy座標を入力してください(1～%dまで).\ny: ", SIZE);
+		scanf("%d", &y);
+		if( x > SIZE || x <= 0 || y > SIZE || y <= 0 ) {
+			printf("xまたはyが範囲外の値です．正しい値を入力してください．\n");
+			continue;
+		}
+		check = Bomb_counter(x-1, y-1);
+		if( check == -1 ) {
+			printf("Bomb!!\n");
+			Show_field(ANS);
+			break;
+		}
+		Show_field(NOW);
+		counter += check;
+		if( counter == SIZE * SIZE - BOMBS ){
+			printf("CONGRATULATION!!!\n");
+			break;
+		}
+	}
+		
+
+	return 0;
+}
+```
+
+------------------------------------------------------------------------------------
+
 #実際の利用画像<br>
 
 ターミナル上でSystemを実行することで5*5マスのフィールドが表示されます。
