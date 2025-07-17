@@ -11,7 +11,6 @@
 
 char FIELD[SIZE][SIZE];			// 答えを保存する配列(爆弾の位置には「x」が保存される
 char NOW_CONDITION[SIZE][SIZE];	// 現在の状態を保存する配列
-bool recursive = true;
 
 // 整数を文字に変換する関数 
 //	引数(int num)：文字に変換したい数値
@@ -91,30 +90,35 @@ void Field_init(void)
 // 引数(int x, inty)：指定された位置のx, y座標
 // 戻り値(int)：指定された位置の周囲に存在する爆弾の数 ( ただし，指定された位置に爆弾が存在する場合は-1を返す )
 int Bomb_counter(int x, int y){
-    int cnt = 0;
-    if(FIELD[y][x] == 'x' && recursive == true){
+    if(FIELD[y][x] == 'x'){
         return -1;
     }
+	if(NOW_CONDITION[y][x] != ' '){
+        return 0;
+	}
 
-    for(int i = x-1; i <= x+1; i++){
-        for(int j = y-1; j <= y+1; j++){
-            if(FIELD[i][j] == 'x')cnt++;
+	int cnt = 0;
+    for(int j = y - 1; j <= y + 1; j++){
+        for(int i = x - 1; i <= x + 1; i++){
+			if(i >= 0 && i < SIZE && j >= 0 && j < SIZE){
+				if(FIELD[j][i] == 'x')cnt++;
+			}
         }
     }
     NOW_CONDITION[y][x] = ItoA(cnt);
 
-    if(recursive){
-        for(int a = x; a <= x+2; a++){
-            for(int b = y; b <= y+2; b++){
-                if(a > SIZE || a <= 0 || b > SIZE || b <= 0){
-                    continue;
-                }
-                recursive = false;
-                Bomb_counter(a-1,b-1);
+    if(cnt == 0){
+        for(int j = y - 1; j <= y + 1; j++){
+            for(int i = x - 1; i <= x + 1; i++){
+                if(i >= 0 && i < SIZE && j >= 0 && j < SIZE){
+					if(!(i == x && j == y)){
+					Bomb_counter(i,j);
+					}
+				}
             }
         }
-        recursive = true;
     }
+	return cnt;
 }
 
 int main(void)
