@@ -92,7 +92,7 @@ void Field_init(void)
 // 戻り値(int)：指定された位置の周囲に存在する爆弾の数 ( ただし，指定された位置に爆弾が存在する場合は-1を返す )
 int Bomb_counter(int x, int y){
     int cnt = 0;
-    if(FIELD[x][y] == 'x' && recursive == true){
+    if(FIELD[y][x] == 'x' && recursive == true){
         return -1;
     }
 
